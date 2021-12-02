@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const Scaffold(body: Center(child: Text("haudau"),),),
+      home: const Scaffold(body: Center(child: Text("Flutter Game Challenges"),),),
     );
   }
 }
