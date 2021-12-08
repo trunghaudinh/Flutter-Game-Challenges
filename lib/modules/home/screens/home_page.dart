@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_game_challenges/models/barrier.dart';
 import 'package:flutter_game_challenges/models/bird.dart';
 
 class HomePage extends StatefulWidget {
@@ -50,25 +51,47 @@ class _HomePageState extends State<HomePage> {
         children: [
           Expanded(
               flex: 3,
-              child: GestureDetector(
-                onTap: () {
-                  if (isGameStarted) {
-                    jump();
-                  } else {
-                    startGame();
-                  }
-                },
-                child: AnimatedContainer(
-                  alignment: Alignment(0, birdYaxis),
-                  duration: _timeDuration,
-                  color: Colors.blue,
-                  child: const MyBird(),
-                ),
+              child: Stack(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      if (isGameStarted) {
+                        jump();
+                      } else {
+                        startGame();
+                      }
+                    },
+                    child: AnimatedContainer(
+                      alignment: Alignment(0, birdYaxis),
+                      duration: _timeDuration,
+                      color: Colors.blue,
+                      child: const MyBird(),
+                    ),
+                  ),
+                  Visibility(
+                    visible: isGameStarted ? false : true,
+                    child: Container(
+                        alignment: const Alignment(0, -0.3),
+                        child: Text(
+                          "T A P  T O  P L A Y",
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline1
+                              ?.copyWith(fontSize: 20, color: Colors.white),
+                        )),
+                  ),
+                  AnimatedContainer(
+                    alignment: Alignment(0,1.1),
+                      duration: Duration(milliseconds: 0),
+                      child: MyBarrier(size: 150))
+                ],
               )),
           Container(
             color: Colors.green,
             height: 15,
           ),
+
+          // score
           Expanded(
               child: Container(
             color: Colors.brown,
