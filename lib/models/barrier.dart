@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MyBarrier extends StatelessWidget {
-  final size;
+  final double size;
 
   const MyBarrier({Key? key, required this.size}) : super(key: key);
 

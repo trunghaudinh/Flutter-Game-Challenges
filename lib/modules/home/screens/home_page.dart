@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_game_challenges/models/barrier.dart';
@@ -21,15 +22,30 @@ class _HomePageState extends State<HomePage> {
   bool isGameStarted = false;
   int score = 0;
   int best = 0;
+  bool lastScoreIsA = false;
 
-  static double barrierXOne = 0;
-  double barrierXTwo = barrierXOne + 1.5;
+  // setup barrier
+  static List<double> barrierX = [2, 3.5];
+  static double barrierWidth = 0.5;
+  static List<List<double>> barrierHeight = [
+    [0.6, 0.4],
+    [0.4, 0.6]
+  ];
 
   void jump() {
     setState(() {
       time = 0;
       initiaHeight = birdYaxis;
     });
+  }
+
+  static Random random = new Random();
+
+  static double randomInRange(double min, double max) {
+    double range = max - min;
+    double scaled = random.nextDouble() * range;
+    double shifted = scaled + min;
+    return shifted; // == (rand.nextDouble() * (max-min)) + min;
   }
 
   void startGame() {
@@ -41,36 +57,103 @@ class _HomePageState extends State<HomePage> {
         birdYaxis = initiaHeight - height;
       });
 
+      // setState(() {
+      //   if(dp(barrierX[0], 2) == 0.05 || dp(barrierX[1], 2) == 0.05){
+      //     score +=1;
+      //   }
+      // });
+
       setState(() {
-        if (barrierXOne <= -2) {
-          barrierXOne += 3.5;
+        if (barrierX[0] <= -1.5) {
+          // barrierX[0] += 3;
+          double random =
+              dp(randomInRange(barrierX[0] + 2.7, barrierX[0] + 3), 2);
+          barrierX[0] = random;
+
+          double height1 = dp(randomInRange(0.4, 0.7), 2);
+          double height2 = dp(randomInRange(0.3, 0.9), 2);
+          // print("random = $random height1 = $height1  ||  height2 = $height2");
+          barrierHeight[0][0] = height1;
+          barrierHeight[0][1] = height2;
         } else {
-          barrierXOne -= 0.05;
-        }
-      });
-      setState(() {
-        if (barrierXTwo <= -2) {
-          barrierXTwo += 3.5;
-        } else {
-          barrierXTwo -= 0.05;
+          barrierX[0] -= 0.05;
         }
       });
 
-      if (birdYaxis > 1) {
+      setState(() {
+        if (!lastScoreIsA && barrierX[0] <= 0 && barrierX[1] > 0) {
+          score += 1;
+          lastScoreIsA = true;
+        }
+      });
+
+      setState(() {
+        if (barrierX[1] <= -1.5) {
+          double random =
+              dp(randomInRange(barrierX[1] + 2.7, barrierX[1] + 3), 2);
+          barrierX[1] = random;
+
+          double height1 = dp(randomInRange(0.4, 0.7), 2);
+          double height2 = dp(randomInRange(0.3, 0.9), 2);
+          // print(" height1 = $height1  ||  height2 = $height2");
+          barrierHeight[1][0] = height1;
+          barrierHeight[1][1] = height2;
+        } else {
+          barrierX[1] -= 0.05;
+        }
+      });
+
+      setState(() {
+        if (lastScoreIsA && barrierX[1] <= 0 && barrierX[0] > 0) {
+          score += 1;
+          lastScoreIsA = false;
+        }
+      });
+
+      if (idBirdDead()) {
+        setState(() {
+          if(score > best) best = score;
+        });
         timer.cancel();
         isGameStarted = false;
       }
     });
   }
 
+  void resetGame() {
+    setState(() {
+      birdYaxis = 0;
+      isGameStarted = false;
+      height = 0;
+      time = 0;
+      score = 0;
+      lastScoreIsA = false;
+      initiaHeight = 0;
+      barrierX = [2, 3.5];
+      barrierHeight = [
+        [0.6, 0.4],
+        [0.4, 0.6]
+      ];
+    });
+  }
+
+  bool idBirdDead() {
+    if (birdYaxis >= 1 || birdYaxis <= -1) return true;
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (isGameStarted) {
-          jump();
+        if (idBirdDead()) {
+          resetGame();
         } else {
-          startGame();
+          if (isGameStarted) {
+            jump();
+          } else {
+            startGame();
+          }
         }
       },
       child: Scaffold(
@@ -98,10 +181,30 @@ class _HomePageState extends State<HomePage> {
                                 ?.copyWith(fontSize: 20, color: Colors.white),
                           )),
                     ),
-                    BarrierWidget(barrierX: barrierXOne, barrierY: -1),
-                    BarrierWidget(barrierX: barrierXOne, barrierY: 1.1),
-                    BarrierWidget(barrierX: barrierXTwo, barrierY: -1),
-                    BarrierWidget(barrierX: barrierXTwo, barrierY: 1),
+                    BarrierWidget(
+                      barrierX: barrierX[0],
+                      barrierWidth: barrierWidth,
+                      barrierHeight: barrierHeight[0][0],
+                      isBarrierTop: true,
+                    ),
+                    BarrierWidget(
+                      barrierX: barrierX[0],
+                      barrierWidth: barrierWidth,
+                      barrierHeight: barrierHeight[0][1],
+                      isBarrierTop: false,
+                    ),
+                    BarrierWidget(
+                      barrierX: barrierX[1],
+                      barrierWidth: barrierWidth,
+                      barrierHeight: barrierHeight[1][0],
+                      isBarrierTop: true,
+                    ),
+                    BarrierWidget(
+                      barrierX: barrierX[1],
+                      barrierWidth: barrierWidth,
+                      barrierHeight: barrierHeight[1][1],
+                      isBarrierTop: false,
+                    ),
                   ],
                 )),
             Container(
@@ -153,5 +256,10 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  double dp(double val, int places) {
+    num mod = pow(10.0, places);
+    return ((val * mod).round().toDouble() / mod);
   }
 }
